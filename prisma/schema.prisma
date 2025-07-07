@@ -1,0 +1,27 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id         Int      @id @default(autoincrement())
+  firebaseId String   @unique
+  nome       String?
+  telefone   String?
+  role       String   // 'cliente' ou 'barbeiro'
+  criadoEm   DateTime @default(now())
+  fila       Fila[]
+}
+
+model Fila {
+  id          Int      @id @default(autoincrement())
+  usuario     Usuario  @relation(fields: [usuarioId], references: [id])
+  usuarioId   Int
+  status      String   // aguardando, em_atendimento, finalizado
+  servico     String
+  horaEntrada DateTime @default(now())
+}
