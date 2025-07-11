@@ -1,48 +1,65 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
-import { verifyIdToken } from "@/lib/firebase-admin"
+import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  const token = req.headers.get("Authorization")?.split(" ")[1]
-  if (!token) return NextResponse.json({ error: "No token" }, { status: 401 })
+export async function PATCH(
+  req: NextRequest,
+  context: { params: { id: string } }
+) {
+  const idNumber = Number(context.params.id)
 
-  const decoded = await verifyIdToken(token)
-  if (!decoded) return NextResponse.json({ error: "Invalid token" }, { status: 401 })
 
-  const itemId = Number.parseInt(params.id)
-  if (isNaN(itemId)) {
-    return NextResponse.json({ error: "Invalid ID" }, { status: 400 })
+  if (isNaN(idNumber)) {
+    return NextResponse.json({ error: 'ID inválido' }, { status: 400 })
   }
 
   try {
-    // Verificar se o item existe
-    const itemExists = await prisma.fila.findUnique({
-      where: { id: itemId },
-    })
+    const { status } = await req.json()
 
-    if (!itemExists) {
-      return NextResponse.json({ error: "Item not found" }, { status: 404 })
+    if (!status) {
+      return NextResponse.json({ error: 'Status é obrigatório' }, { status: 400 })
     }
 
-    // Excluir o item
-    const deletedItem = await prisma.fila.delete({
-      where: { id: itemId },
+    const itemAtualizado = await prisma.fila.update({
+      where: { id: idNumber },
+      data: { status },
     })
 
-    // excluir o usuário associado, se necessário
-    if (deletedItem.usuarioId) {
-      await prisma.usuario.delete({
-        where: { id: deletedItem.usuarioId },
-      })
-    }
-
-    return NextResponse.json({
-      success: true,
-      message: "Item deleted successfully",
-      deletedItem,
-    })
+    return NextResponse.json(itemAtualizado)
   } catch (error) {
-    console.error("Error deleting item:", error)
-    return NextResponse.json({ error: "Failed to delete item" }, { status: 500 })
+    console.error('Erro ao atualizar status:', error)
+    return NextResponse.json({ error: 'Erro interno' }, { status: 500 })
+  }
+}
+
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+  const id = Number(params.id)
+
+  if (isNaN(id)) {
+    return NextResponse.json({ error: 'ID inválido' }, { status: 400 })
+  }
+
+  try {
+    // Busca o item da fila com o ID do usuário
+    const item = await prisma.fila.findUnique({
+      where: { id },
+      include: { usuario: true },
+    })
+
+    if (!item) {
+      return NextResponse.json({ error: 'Item não encontrado' }, { status: 404 })
+    }
+
+    // Deleta o item da fila
+    await prisma.fila.delete({ where: { id } })
+
+    // Deleta o usuário vinculado
+    if (item.usuario?.id) {
+      await prisma.usuario.delete({ where: { id: item.usuario.id } })
+    }
+
+    return NextResponse.json({ success: true }, { status: 200 })
+  } catch (error) {
+    console.error('Erro ao excluir:', error)
+    return NextResponse.json({ error: 'Erro ao excluir' }, { status: 500 })
   }
 }

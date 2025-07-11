@@ -11,16 +11,25 @@ model Usuario {
   id         Int      @id @default(autoincrement())
   firebaseId String   @unique
   nome       String?
+  email      String?  @unique
   telefone   String?
   role       String   // 'cliente' ou 'barbeiro'
   criadoEm   DateTime @default(now())
-  fila       Fila[]
+
+  // Relações
+  fila       Fila[]                // Como cliente
+  filaComoBarbeiro Fila[] @relation("FilaBarbeiro") // Como barbeiro
 }
 
 model Fila {
   id          Int      @id @default(autoincrement())
+
   usuario     Usuario  @relation(fields: [usuarioId], references: [id])
   usuarioId   Int
+
+  barbeiro    Usuario  @relation("FilaBarbeiro", fields: [barbeiroId], references: [id])
+  barbeiroId  Int
+
   status      String   // aguardando, em_atendimento, finalizado
   servico     String
   horaEntrada DateTime @default(now())
