@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import {
-  Phone,
   PlayCircle,
   StopCircle,
   Users,
@@ -94,7 +93,7 @@ export default function PainelBarbearia() {
     setLoadingStatusId(id);
     try {
       const token = localStorage.getItem("token");
-      await fetch(`/api/fila/${id}`, {
+      await fetch(`/api/fila/atualizar/${id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -118,7 +117,7 @@ export default function PainelBarbearia() {
   const excluirDaFila = async (id: number) => {
     setLoadingDeleteId(id);
     try {
-      await fetch(`/api/fila/${id}`, { method: "DELETE" });
+      await fetch(`/api/fila/delete/${id}`, { method: "DELETE" });
       toast.warning("Item excluído com sucesso!");
       fetchFila();
     } finally {

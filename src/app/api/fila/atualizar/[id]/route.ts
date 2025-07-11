@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-interface Context {
-  params: Promise<{ id: string }>;
-}
-
-export async function PATCH(req: NextRequest, context: Context) {
+export async function PATCH(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   const params = await context.params;
   const idStr = params.id;
 
@@ -14,16 +10,21 @@ export async function PATCH(req: NextRequest, context: Context) {
   }
 
   const id = Number(idStr);
-
   if (isNaN(id)) {
     return NextResponse.json({ error: "ID inválido" }, { status: 400 });
   }
 
+
   try {
-    const { status } = await req.json();
+    const body = await req.json();
+
+    const status = body?.status;
 
     if (!status || typeof status !== "string") {
-      return NextResponse.json({ error: "Status inválido" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Status é obrigatório e deve ser uma string" },
+        { status: 400 }
+      );
     }
 
     const atualizado = await prisma.fila.update({
@@ -32,8 +33,8 @@ export async function PATCH(req: NextRequest, context: Context) {
     });
 
     return NextResponse.json(atualizado);
-  } catch (error) {
-    console.error("Erro ao atualizar:", error);
+  } catch (err) {
+    console.error("Erro ao atualizar:", err);
     return NextResponse.json({ error: "Erro interno" }, { status: 500 });
   }
 }

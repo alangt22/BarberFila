@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
     const token = req.headers.get("Authorization")?.split(" ")[1];
     if (!token)
       return NextResponse.json({ error: "Token ausente" }, { status: 401 });
-    console.log("Token recebido:", token);
+
     const decoded = await verifyIdToken(token);
     const { nome, telefone, barbeiroEmail, servico } = await req.json();
 

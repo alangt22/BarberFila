@@ -1,7 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import {
-  Users,
   UserCircle2,
   Scissors,
   Clock3,
@@ -9,13 +8,14 @@ import {
   PlayCircle,
 } from "lucide-react";
 
-type Props = { params: { email: string } };
+type Props = { params: Promise<{ email: string }> };
 
 export default async function BarbeiroFilaPage({ params }: Props) {
-  const email = decodeURIComponent(params.email);
-
+  const { email } = await params;
+  const emailDecoded = decodeURIComponent(email);
+  
   const barbeiro = await prisma.usuario.findUnique({
-    where: { email },
+    where: { email: emailDecoded },
   });
 
   if (!barbeiro || barbeiro.role !== "barbeiro") {
