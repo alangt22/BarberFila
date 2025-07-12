@@ -130,7 +130,7 @@ export default async function BarbeiroFilaPage({ params }: Props) {
       <div className="mt-10 text-center">
         <Link
         target="_blank"
-          href={`/login?barbeiro=${encodeURIComponent(email)}`}
+          href={`/login?barbeiro=${(email)}`} 
           className="inline-block px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition"
         >
           Entrar na Fila

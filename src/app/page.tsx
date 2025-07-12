@@ -18,7 +18,7 @@ export default function Home() {
   async function loginGoogle() {
     setLoader(true);
     signIn("google", {
-      callbackUrl: "http://localhost:3000/painel-barbeiro",
+      callbackUrl: "https://barber-fila.vercel.app/painel-barbeiro",
     });
   }
 
